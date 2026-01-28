@@ -1,43 +1,46 @@
-version: '3.4'
- 
+version: "3.8"
+
 services:
-  springboot-service:
-    image: shamkumbhar47/backend:hrms
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-service:3306/hrmsportal
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql-service
-    networks:
-      - mynetwork
-   
-  frontend:
-    image: shamkumbhar47/frontend:hrms
-    ports:
-      - "4200:80"
-    depends_on:
-      - mysql-service
-    networks:
-      - mynetwork
- 
   mysql-service:
     image: mysql:8.0
+    container_name: hrms_mysql
     environment:
-      MYSQL_ROOT_PASSWORD: "root"
-      MYSQL_DATABASE: "hrmsportal"
-      MYSQL_PASSWORD: "root"
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hrmsportal
     ports:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
       - mynetwork
-    
+
+  springboot-service:
+    image: shamkumbhar47/backend:hrms
+    container_name: hrms_backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-service:3306/hrmsportal
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    ports:
+      - "8081:8080"   # 🔥 FIX: avoid Jenkins 8080 conflict
+    depends_on:
+      - mysql-service
+    networks:
+      - mynetwork
+
+  frontend:
+    image: shamkumbhar47/frontend:hrms
+    container_name: hrms_frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - springboot-service   # 🔥 FIX: correct dependency
+    networks:
+      - mynetwork
+
 networks:
   mynetwork:
+    driver: bridge
 
 volumes:
   mysql-data:
