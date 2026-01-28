@@ -1,9 +1,13 @@
 version: "3.8"
 
 services:
+  # =========================
+  # MySQL Database
+  # =========================
   mysql-service:
     image: mysql:8.0
     container_name: hrms_mysql
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: hrmsportal
@@ -12,35 +16,56 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
-      - mynetwork
+      - hrms-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # =========================
+  # Spring Boot Backend
+  # =========================
   springboot-service:
     image: shamkumbhar47/backend:hrms
     container_name: hrms_backend
+    restart: always
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-service:3306/hrmsportal
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     ports:
-      - "8081:8080"   # 🔥 FIX: avoid Jenkins 8080 conflict
+      - "8081:8080"        # Jenkins uses 8080
     depends_on:
-      - mysql-service
+      mysql-service:
+        condition: service_healthy
     networks:
-      - mynetwork
+      - hrms-network
 
+  # =========================
+  # Angular + Nginx Frontend
+  # =========================
   frontend:
     image: shamkumbhar47/frontend:hrms
     container_name: hrms_frontend
+    restart: always
     ports:
       - "4200:80"
     depends_on:
-      - springboot-service   # 🔥 FIX: correct dependency
+      - springboot-service
     networks:
-      - mynetwork
+      - hrms-network
 
+# =========================
+# Network
+# =========================
 networks:
-  mynetwork:
+  hrms-network:
     driver: bridge
 
+# =========================
+# Volumes
+# =========================
 volumes:
   mysql-data:
