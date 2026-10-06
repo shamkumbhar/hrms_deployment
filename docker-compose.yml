@@ -27,7 +27,7 @@ services:
   # Spring Boot Backend
   # =========================
   springboot-service:
-    image: shamkumbhar47/backend:hrms1
+    image: shamkumbhar47/backend:hrms
     container_name: hrms_backend
     restart: always
     environment:
@@ -47,7 +47,7 @@ services:
   # Angular + Nginx Frontend
   # =========================
   frontend:
-    image: shamkumbhar47/frontend:hrms1
+    image: shamkumbhar47/frontend:hrms
     container_name: hrms_frontend
     restart: always
     ports:
