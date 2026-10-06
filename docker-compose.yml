@@ -4,7 +4,7 @@ services:
   # =========================
   # MySQL Database
   # =========================
-  mysql-service:
+  mysql-service: 
     image: mysql:8.0
     container_name: hrms_mysql
     restart: always
